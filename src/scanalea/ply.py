@@ -36,6 +36,7 @@ import openalea.plantgl.scenegraph as sg
 import openalea.plantgl.algo as alg
 #from openalea.plantgl.ext import color
 
+from .vtk import generic_vtk_read
 
 class PlyCodec (sg.SceneCodec):
     """ PLY File Format 
@@ -273,6 +274,13 @@ class PlyCodec (sg.SceneCodec):
 
         f.close()
     
+class PlyCodecVTK(PlyCodec):
+    def read(self,fname):
+        """ read a ply file """
+        from mayavi.sources.poly_data_reader import PolyDataReader
+        my_reader = PolyDataReader()
+        return generic_vtk_read(my_reader,fname)
+
 
 codec = PlyCodec()
 sg.SceneFactory.get().registerCodec(codec)
