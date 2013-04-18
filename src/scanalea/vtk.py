@@ -48,14 +48,32 @@ def generic_vtk_read(reader, fname):
     faces = polys.to_array()
 
     faces = faces.reshape((polys.number_of_cells,polys.max_cell_size+1))
-    ids, index_1, index_2, index_3 = faces.T
+    indexList = faces[:,1:]
+    
+    pts = points.tolist()
 
-    indexList = np.array((index_1,index_2, index_3)).T
-
-    # Build the scene
     scene = sg.Scene()
-    tset = sg.FaceSet(pointList=points.tolist(), indexList=indexList.tolist())
-    scene+= tset
+
+    scalars = mesh.point_data.scalars
+
+    if scalars:
+        scalars = scalars.to_array()
+        set_scalars = np.unique(scalars)
+
+        #print set_scalars
+        for s in set_scalars:
+            idx = (scalars[indexList]==s).any(axis=1).nonzero()[0]
+            if len(idx) == 0: #or s <= 99:
+                continue
+            my_faces = indexList[idx].tolist()
+            tset = sg.FaceSet(pointList=pts, indexList=my_faces)
+            color = np.random.randint(0,255,3).tolist()
+            shape = sg.Shape(tset,sg.Material(color))
+            shape.id = int(s)
+            scene.add(shape)
+    else:
+        tset = sg.FaceSet(pointList=pts, indexList=indexList.tolist())
+        scene+= tset
 
     return scene
 
