@@ -19,4 +19,31 @@ Reference:
 ~~~~~~~~~~
 
 
+Hacker guide
+~~~~~~~~~~~~~
+
+For young git user, here is a list of usefull commands:
+
+Commit your modifications on YOUR local branch:
+.. code:: bash
+    
+    git commit -am 'FIX - my message'
+
+To publish your modifications on your github (like svn commit):
+.. code:: bash
+    
+    git push
+
+To retrieve the modifications from others (svn update):
+.. code:: bash
+    
+    git pull
+
+Finally to publish the patches on openalea/scanalea:
+    Ask for a pull request
+
+
+
+
+
 
