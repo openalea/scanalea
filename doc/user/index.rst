@@ -1,6 +1,6 @@
 .. _scanalea_user:
 
-.ScanAlea User Guide
+ScanAlea User Guide
 #######################################
 
 :Version: |version|
