@@ -7,12 +7,12 @@ Reference guide
 ###################################
 .. contents::
 
-.. currentmodule:: .scanalea.__init__
+.. currentmodule:: scanalea.__init__
 
 
-:mod:`.scanalea` module
+:mod:`scanalea` module
 ===============================================
-.. automodule:: .scanalea.__init__
+.. automodule:: scanalea.__init__
     :members:
     :undoc-members:
     :inherited-members:
