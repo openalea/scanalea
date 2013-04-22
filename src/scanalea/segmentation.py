@@ -1,7 +1,7 @@
 from openalea.plantgl.scenegraph import Material, Shape, FaceSet
 import numpy as np
 
-def organs(scene, first_leaf_index = 99):
+def organs(scene, first_leaf_index = 99, split_stem=False):
     """ Extract organs from a segmented mesh. """
     leaves = {}
     stems = {}
@@ -73,26 +73,96 @@ def organs(scene, first_leaf_index = 99):
 
     #leaves = group_leaves(connected_components, leaves)
     # Order leaves
-    
+    points = np.array(bigstem.geometry.pointList)
+    coords = []
+    for lid in group_leaves:
+        sh = group_leaves[lid]
+        frontier = points[intersect(sh,bigstem)]
+        x,y,z  = frontier.T
+        coords.append((lid, z.min(), z.mean(), z.max()))
+
+    sorted_coords = sorted(coords, key= lambda coord: coord[1])
+
+    if not split_stem:
+        k0 = min(list(stems))
+        group_stems = {k0: bigstem}
+        return group_stems, group_leaves, connected_components, sorted_coords
 
     # Group Stems
+    # compute the z_min of each stem
+    # then associate the stem id with the leaf
+    stem_bbox = []
+    for sid in stems:
+        faces = np.array(stems[sid].geometry.indexList)
+        pts = points[faces]
+        x, y, z = pts.T
+        stem_bbox.append((sid, z.min(), z.max()))
 
-    return stems, group_leaves, connected_components
+    stem_bbox = sorted(stem_bbox, key= lambda coord: coord[2])
+
+#    print "stem_box : ",stem_bbox
+#    print "sorted_coords : ",sorted_coords
+    index = 0
+    _stems = {}
+    lid, lmin, lmean, lmax = sorted_coords.pop(0)
+    for i in range(len(stem_bbox)):
+        stem_id, smin, smax = stem_bbox[i]
+        if smax <= lmin:
+            _stems.setdefault(lid,[]).append(stem_id)
+            continue
+        else:
+            while sorted_coords and smax > lmin:
+                lid, lmin, lmean, lmax = sorted_coords.pop(0)
+            else:
+                if not sorted_coords:
+                    index = i
+                    break
+                else:
+                    _stems.setdefault(lid,[]).append(stem_id)
+    if index != 0:
+        # last stems are a leaf
+        last_stems = dict((s[0],stems[s[0]]) for s in stem_bbox[index:])
+        new_leaf_id = max(group_leaves.keys())+1
+        sid = last_stems.keys()[0]
+        last_stems[new_leaf_id] = last_stems[sid]
+        del last_stems[sid]
+        sh = group_shapes(last_stems,new_leaf_id)
+        sh.id = new_leaf_id
+        group_leaves[new_leaf_id] = sh
+        print last_stems
+        
+    print _stems
+
+    group_stems = {}
+    for lid in _stems:
+        stem_shapes = dict((sid,stems[sid]) for sid in _stems[lid])
+        group_stems[lid] = group_shapes(stem_shapes)
+        group_stems[lid].id = lid
 
 
-def closed(shape1, shape2):
+    return group_stems, group_leaves, connected_components, sorted_coords
+
+
+def intersect(shape1, shape2):
     mesh1, mesh2 = shape1.geometry, shape2.geometry
     x = np.unique(np.array(mesh1.indexList))
     y = np.unique(np.array(mesh2.indexList))
 
     commons = np.intersect1d(x,y)
     if len(commons):
-        return True
-    return False
+        return commons
+    return []
 
-def group_shapes(shapes):
-    keys = list(shapes)
-    sh0 = shapes[keys[0]]
+def closed(shape1, shape2):
+    frontier = intersect(shape1, shape2)
+    return len(frontier) != 0
+
+def group_shapes(shapes, shape_id=None):
+    
+    if shape_id is None:
+        keys = list(shapes)
+        shape_id = keys[0]
+    sh0 = shapes[shape_id] 
     points = sh0.geometry.pointList
     color = sh0.appearance
 

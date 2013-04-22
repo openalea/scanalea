@@ -1,5 +1,5 @@
 from openalea.plantgl.all import *
-from scanalea.segmentation import *
+from scanalea import segmentation as seg
 from scanalea.codecs import read, ply
 
 from time import time
@@ -8,14 +8,17 @@ fn = '/media/pradal/DONNEES/pradal/data/plantscan/segmented/segmentedMesh.vtk'
 scene = read(fn)
 Viewer.display(scene)
 
-stems, leaves, groups = organs(scene)
+stems, leaves, groups, coords = seg.organs(scene)
 
-print len(groups)
-scene = Scene(leaves.values())
-scene.add(big_stem(stems))
+shapes = leaves.values()
+shapes.extend(stems.values())
+scene1 = Scene(shapes)
+Viewer.display(scene1)
 
-Viewer.display(scene)
+from scanalea.light import caribu, display, turtle
 
+caribu_scene, res = caribu(scene1, source=turtle(16))
+display(scene1, res)
 
 """
 fn = '/media/pradal/DONNEES/pradal/data/plantscan/663_4_tp/FourTPsec_20130326_3199_663_res1280_full_vh_smoothed_textured.ply'
