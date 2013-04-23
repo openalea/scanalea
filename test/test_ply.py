@@ -5,6 +5,7 @@ from scanalea.codecs import read, ply
 from time import time
 
 fn = '/media/pradal/DONNEES/pradal/data/plantscan/segmented/segmentedMesh.vtk'
+fn = '/media/pradal/DONNEES/pradal/data/plantscan/segmented/segmentedMesh_manualseg.vtk'
 scene = read(fn)
 Viewer.display(scene)
 
