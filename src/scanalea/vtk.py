@@ -58,19 +58,42 @@ def generic_vtk_read(reader, fname):
 
     if scalars:
         scalars = scalars.to_array()
-        set_scalars = np.unique(scalars)
+        dim = scalars.shape[-1]
+        set_scalars = []
+        if dim == 1:
+            set_scalars = np.unique(scalars)
+        elif dim in (3,4):
+            set_scalars = set(tuple(x) for x in scalars.tolist())
 
         #print set_scalars
+        leaf_index = 100
         for s in set_scalars:
-            idx = (scalars[indexList]==s).any(axis=1).nonzero()[0]
+            print 'color ',s
+            idx = None
+            if dim ==1:
+                idx = (scalars[indexList]==s).any(axis=1).nonzero()[0]
+            elif dim in (3,4):
+                vertex_has_color = (scalars==s).all(axis=1)
+                idx = vertex_has_color[indexList].any(axis=1).nonzero()[0]
+
             if len(idx) == 0: #or s <= 99:
                 continue
             my_faces = indexList[idx].tolist()
             tset = sg.FaceSet(pointList=pts, indexList=my_faces)
-            color = np.random.randint(0,255,3).tolist()
+            color = np.random.randint(0,255,3).tolist() if dim == 1 else s
             shape = sg.Shape(tset,sg.Material(color))
-            shape.id = int(s)
-            scene.add(shape)
+            if dim == 1:
+                shape.id = int(s)
+            else:
+                if s == (153, 102, 51):
+                    shape.id = 1
+                elif s == (0,255,255):
+                    shape.id = 2
+                else:
+                    shape.id = leaf_index
+                    leaf_index+=1
+            if s != (150,150,150):
+                scene.add(shape)
     else:
         tset = sg.FaceSet(pointList=pts, indexList=indexList.tolist())
         scene+= tset

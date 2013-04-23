@@ -1,5 +1,6 @@
-from openalea.plantgl.scenegraph import Material, Shape, FaceSet
+from openalea.plantgl.scenegraph import Material, Shape, FaceSet, Tapered, Cylinder, Translated
 import numpy as np
+from math import sqrt
 
 def organs(scene, first_leaf_index = 99, split_stem=False):
     """ Extract organs from a segmented mesh. """
@@ -78,6 +79,9 @@ def organs(scene, first_leaf_index = 99, split_stem=False):
     for lid in group_leaves:
         sh = group_leaves[lid]
         frontier = points[intersect(sh,bigstem)]
+        if len(frontier)==0:
+            print 'no frontier between leaf %d and stem'
+            continue
         x,y,z  = frontier.T
         coords.append((lid, z.min(), z.mean(), z.max()))
 
@@ -100,8 +104,8 @@ def organs(scene, first_leaf_index = 99, split_stem=False):
 
     stem_bbox = sorted(stem_bbox, key= lambda coord: coord[2])
 
-#    print "stem_box : ",stem_bbox
-#    print "sorted_coords : ",sorted_coords
+    print "stem_box : ",stem_bbox
+    print "sorted_coords : ",sorted_coords
     index = 0
     _stems = {}
     lid, lmin, lmean, lmax = sorted_coords.pop(0)
@@ -188,4 +192,77 @@ def big_stem(stems):
 
     return Shape(FaceSet(points, faces),stems[keys[0]].appearance)
 
+def bbox(shape):
+    mesh = shape.geometry
+    points = np.array(mesh.pointList)
+    faces = np.array(mesh.indexList)
+    pts = points[np.unique(faces)]
+    x, y, z = pts.T
+    return ((x.min(), x.mean(), x.max()),
+            (y.min(), y.mean(), y.max()),
+            (z.min(), z.mean(), z.max()))
 
+
+    
+def create_mtg(stems, leaves, ordered_leaves):
+    from openalea.mtg import mtg
+    mesh = None
+    if len(stems) > 1:
+        mesh = big_stem(stems)
+    else:
+        mesh = stems[stems.keys()[0]]
+    mesh = mesh.geometry
+    points = np.array(mesh.pointList)
+    faces = np.array(mesh.indexList)
+    pts = points[np.unique(faces)]
+    x, y, z = pts.T
+
+    zmin = z.min()
+    
+    g = mtg.MTG()
+    vid = g.add_component(g.root, label='plant1')
+    mid = g.add_component(vid, label='mainstem')
+
+
+    stem_elt = []
+    previous_metamer = 0
+    vid_metamer = None
+    vid_stem = None
+
+    for lid, _min, _mean, _max in ordered_leaves:
+        height = _min-zmin
+        dz = height/10.
+        mask = (z>=zmin) & (z <=zmin+dz)
+        xlayer, ylayer = x[mask], y[mask]
+        diameter_base = sqrt((xlayer.max()-xlayer.min())*(ylayer.max()-ylayer.min()))
+
+        mask = (z>=_min-dz) & (z <=_min)
+        xlayer, ylayer = x[mask], y[mask]
+        diameter_top = sqrt((xlayer.max()-xlayer.min())*(ylayer.max()-ylayer.min()))
+
+        #mask_mesh =  (z>=zmin) & (z <=_min)
+        #my_faces = mask_mesh[faces].any(axe=1).nonzero()[0]
+
+        new_metamer = g.add_component(mid, label='metamer%d'%(previous_metamer+1))
+        if previous_metamer == 0:
+            vid_metamer = new_metamer
+        else:
+            vid_metamer =  g.add_child(vid_metamer, child=new_metamer, edge_type='<')
+
+        stemgeom = Shape(Translated((0,0,zmin),Tapered(diameter_base/2., diameter_top/2., Cylinder(1,height))), 
+                        leaves[lid].appearance)
+        new_stem = g.add_component(vid_metamer, label='StemElement', length=height, geometry=stemgeom)
+        if previous_metamer == 0:
+            vid_stem = new_stem
+        else:
+            vid_stem =  g.add_child(vid_stem, child=new_stem, edge_type='<')
+
+        # Add leaf
+        g.add_child(vid_stem, edge_type='+', label='LeafElement', geometry=leaves[lid])
+        zmin = _min
+        previous_metamer+=1
+        
+
+    return mtg.fat_mtg(g)
+        
+    
