@@ -95,6 +95,7 @@ class PlyCodec (sg.SceneCodec):
         faces= []
         textures= []
         texture_files = []
+        vertex_colours = []
         line = 0
         nb_vertices = 0
         nb_faces = 0
@@ -156,7 +157,9 @@ class PlyCodec (sg.SceneCodec):
                             assert len(t[1]) <= 1
                             v.append(t[1][0](fields[i]))
                             i+=1
-                        vertices.append(v)
+                        vertices.append(v[:3])
+                        if len(v)>=6.: #if vertext colours exsist
+                          vertex_colours.append(v[3:])
                         if counter == nb_vertices:
                             tag_index +=1 
                             tag = elements[tag_index]
@@ -200,7 +203,7 @@ class PlyCodec (sg.SceneCodec):
 
        # Build the scene
         scene = sg.Scene()
-        tset = sg.FaceSet(pointList=vertices, indexList=faces)
+        tset = sg.FaceSet(pointList=vertices, indexList=faces, colorList=vertex_colours, colorPerVertex=True)
         scene+= tset
 
 
@@ -277,7 +280,11 @@ class PlyCodec (sg.SceneCodec):
 class PlyCodecVTK(PlyCodec):
     def read(self,fname):
         """ read a ply file """
-        from mayavi.sources.poly_data_reader import PolyDataReader
+        try:
+          from mayavi.sources.poly_data_reader import PolyDataReader
+        except:
+          from enthought.mayavi.sources.poly_data_reader import PolyDataReader
+        
         my_reader = PolyDataReader()
         return generic_vtk_read(my_reader,fname)
 
