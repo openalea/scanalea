@@ -42,8 +42,6 @@ def generic_vtk_read(reader, fname):
     mesh = r.outputs[0] 
 
     points = mesh.points.to_array()
-    x, y, z = points.T
-    points = np.array((x,y,z)).T
     polys = mesh.polys
     faces = polys.to_array()
 
@@ -55,20 +53,17 @@ def generic_vtk_read(reader, fname):
     scene = sg.Scene()
 
     scalars = mesh.point_data.scalars
-
     if scalars:
         scalars = scalars.to_array()
-        dim = scalars.shape[-1]
+        dim = 1 if len(scalars.shape)==1 else scalars.shape[-1]
         set_scalars = []
         if dim == 1:
             set_scalars = np.unique(scalars)
         elif dim in (3,4):
             set_scalars = set(tuple(x) for x in scalars.tolist())
 
-        #print set_scalars
         leaf_index = 100
         for s in set_scalars:
-            print 'color ',s
             idx = None
             if dim ==1:
                 idx = (scalars[indexList]==s).any(axis=1).nonzero()[0]
@@ -92,8 +87,9 @@ def generic_vtk_read(reader, fname):
                 else:
                     shape.id = leaf_index
                     leaf_index+=1
-            if s != (150,150,150):
-                scene.add(shape)
+                if dim == 3 and s == (150,150,150):
+                    continue
+            scene.add(shape)
     else:
         tset = sg.FaceSet(pointList=pts, indexList=indexList.tolist())
         scene+= tset
