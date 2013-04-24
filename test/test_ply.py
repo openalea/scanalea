@@ -1,6 +1,7 @@
 from openalea.plantgl.all import *
 from scanalea import segmentation as seg
 from scanalea.codecs import read, ply
+import numpy as np
 
 from time import time
 
@@ -16,10 +17,14 @@ shapes.extend(stems.values())
 scene1 = Scene(shapes)
 Viewer.display(scene1)
 
+"""
 from scanalea.light import caribu, display, turtle
 
-caribu_scene, res = caribu(scene1, source=turtle(16))
-display(scene1, res)
+caribu_scene, res = caribu(scene, source=turtle(16))
+display(scene, res)
+"""
+g = seg.create_mtg(stems, leaves,coords)
+Viewer.display(Scene(g.property('geometry').values()))
 
 """
 fn = '/media/pradal/DONNEES/pradal/data/plantscan/663_4_tp/FourTPsec_20130326_3199_663_res1280_full_vh_smoothed_textured.ply'

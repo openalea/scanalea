@@ -42,8 +42,6 @@ def generic_vtk_read(reader, fname):
     mesh = r.outputs[0] 
 
     points = mesh.points.to_array()
-    x, y, z = points.T
-    points = np.array((x,y,z)).T
     polys = mesh.polys
     faces = polys.to_array()
 
@@ -55,21 +53,42 @@ def generic_vtk_read(reader, fname):
     scene = sg.Scene()
 
     scalars = mesh.point_data.scalars
-
     if scalars:
         scalars = scalars.to_array()
-        set_scalars = np.unique(scalars)
+        dim = 1 if len(scalars.shape)==1 else scalars.shape[-1]
+        set_scalars = []
+        if dim == 1:
+            set_scalars = np.unique(scalars)
+        elif dim in (3,4):
+            set_scalars = set(tuple(x) for x in scalars.tolist())
 
-        #print set_scalars
+        leaf_index = 100
         for s in set_scalars:
-            idx = (scalars[indexList]==s).any(axis=1).nonzero()[0]
+            idx = None
+            if dim ==1:
+                idx = (scalars[indexList]==s).any(axis=1).nonzero()[0]
+            elif dim in (3,4):
+                vertex_has_color = (scalars==s).all(axis=1)
+                idx = vertex_has_color[indexList].any(axis=1).nonzero()[0]
+
             if len(idx) == 0: #or s <= 99:
                 continue
             my_faces = indexList[idx].tolist()
             tset = sg.FaceSet(pointList=pts, indexList=my_faces)
-            color = np.random.randint(0,255,3).tolist()
+            color = np.random.randint(0,255,3).tolist() if dim == 1 else s
             shape = sg.Shape(tset,sg.Material(color))
-            shape.id = int(s)
+            if dim == 1:
+                shape.id = int(s)
+            else:
+                if s == (153, 102, 51):
+                    shape.id = 1
+                elif s == (0,255,255):
+                    shape.id = 2
+                else:
+                    shape.id = leaf_index
+                    leaf_index+=1
+                if dim == 3 and s == (150,150,150):
+                    continue
             scene.add(shape)
     else:
         tset = sg.FaceSet(pointList=pts, indexList=indexList.tolist())

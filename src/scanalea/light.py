@@ -1,6 +1,6 @@
 from matplotlib import cm
 from alinea.caribu.CaribuScene import CaribuScene
-import .turtle as _turtle
+import turtle as _turtle
 
 import openalea.plantgl.all as pgl
 def caribu(scene, source = (1,(0,0,-1)), infinity=False):
