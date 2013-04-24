@@ -214,11 +214,13 @@ def create_mtg(stems, leaves, ordered_leaves):
     mesh = mesh.geometry
     points = np.array(mesh.pointList)
     faces = np.array(mesh.indexList)
-    pts = points[np.unique(faces)]
-    x, y, z = pts.T
 
-    zmin = z.min()
-    
+    pts = points[np.unique(faces)]
+    x, y, z = points.T #coordinates of the pts in the mesh
+    xf, yf, zf = pts.T
+    zmin = z[faces].min()
+    zmax = z[faces].max()    
+
     g = mtg.MTG()
     vid = g.add_component(g.root, label='plant1')
     mid = g.add_component(vid, label='mainstem')
@@ -229,19 +231,30 @@ def create_mtg(stems, leaves, ordered_leaves):
     vid_metamer = None
     vid_stem = None
 
+    last_leaf = ordered_leaves[-1][0]
     for lid, _min, _mean, _max in ordered_leaves:
         height = _min-zmin
         dz = height/10.
-        mask = (z>=zmin) & (z <=zmin+dz)
-        xlayer, ylayer = x[mask], y[mask]
+        mask = (zf>=zmin) & (zf <=zmin+dz)
+        xlayer, ylayer = xf[mask], yf[mask]
         diameter_base = sqrt((xlayer.max()-xlayer.min())*(ylayer.max()-ylayer.min()))
 
-        mask = (z>=_min-dz) & (z <=_min)
-        xlayer, ylayer = x[mask], y[mask]
+        if lid == last_leaf:
+            mask = (zf>=_min-dz)
+        else:
+            mask = (zf>=_min-dz) & (zf <=_min)
+            
+        xlayer, ylayer = xf[mask], yf[mask]
         diameter_top = sqrt((xlayer.max()-xlayer.min())*(ylayer.max()-ylayer.min()))
 
-        #mask_mesh =  (z>=zmin) & (z <=_min)
-        #my_faces = mask_mesh[faces].any(axe=1).nonzero()[0]
+
+        if lid == last_leaf:
+            face_mask = (z>=zmin)[faces].any(axis=1)
+        else:
+            face_mask = ((z>=zmin) & (z <=_min))[faces].any(axis=1)
+        my_faces = (faces[face_mask]).tolist()
+        stem_mesh = Shape(FaceSet(pointList=mesh.pointList,indexList=my_faces),
+                          leaves[lid].appearance)
 
         new_metamer = g.add_component(mid, label='metamer%d'%(previous_metamer+1))
         if previous_metamer == 0:
@@ -249,9 +262,8 @@ def create_mtg(stems, leaves, ordered_leaves):
         else:
             vid_metamer =  g.add_child(vid_metamer, child=new_metamer, edge_type='<')
 
-        stemgeom = Shape(Translated((0,0,zmin),Tapered(diameter_base/2., diameter_top/2., Cylinder(1,height))), 
-                        leaves[lid].appearance)
-        new_stem = g.add_component(vid_metamer, label='StemElement', length=height, geometry=stemgeom)
+        #stem_mesh = Shape(Translated((0,0,zmin),Tapered(diameter_base/2., diameter_top/2., Cylinder(1,height))),  leaves[lid].appearance)
+        new_stem = g.add_component(vid_metamer, label='StemElement', length=height, geometry=stem_mesh)
         if previous_metamer == 0:
             vid_stem = new_stem
         else:
