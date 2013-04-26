@@ -263,7 +263,10 @@ def create_mtg(stems, leaves, ordered_leaves):
             vid_metamer =  g.add_child(vid_metamer, child=new_metamer, edge_type='<')
 
         #stem_mesh = Shape(Translated((0,0,zmin),Tapered(diameter_base/2., diameter_top/2., Cylinder(1,height))),  leaves[lid].appearance)
-        new_stem = g.add_component(vid_metamer, label='StemElement', length=height, geometry=stem_mesh)
+        new_stem = g.add_component(vid_metamer, label='StemElement', 
+                                   length=height, geometry=stem_mesh,
+                                   diameter_base=diameter_base,
+                                   diameter_top=diameter_top)
         if previous_metamer == 0:
             vid_stem = new_stem
         else:
@@ -277,4 +280,18 @@ def create_mtg(stems, leaves, ordered_leaves):
 
     return mtg.fat_mtg(g)
         
+    
+def add_leaves_data(g, fn):
+    data= np.genfromtxt(fn,delimiter=',' ,names=True)
+    key='Leaf_Number'
+    data.sort(order='height')
+    
+    leaves = sorted(vid for vid in g.vertices() if g.label(vid) == 'LeafElement')
+    for i, lid in enumerate(leaves):
+        n = g.node(lid)
+        for k in data.dtype.names:
+            if k==key: continue
+            n.__setattr__(k.lower(),data[k][i])
+    return g
+
     
