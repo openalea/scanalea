@@ -23,8 +23,12 @@ from scanalea.light import caribu, display, turtle
 caribu_scene, res = caribu(scene, source=turtle(16))
 display(scene, res)
 """
-g = seg.create_mtg(stems, leaves,coords)
+
+leaves_data = '/media/pradal/DONNEES/pradal/data/plantscan/segmented3/leaves_data.csv'
+g = seg.create_mtg(stems, leaves,coords, leaves_data=leaves_data)
 Viewer.display(Scene(g.property('geometry').values()))
+
+g = add_leaves_data(g,leaves_data)
 
 """
 fn = '/media/pradal/DONNEES/pradal/data/plantscan/663_4_tp/FourTPsec_20130326_3199_663_res1280_full_vh_smoothed_textured.ply'
