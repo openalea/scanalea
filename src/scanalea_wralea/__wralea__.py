@@ -19,7 +19,8 @@ __all__ = []
 _read = Factory(name="scanalea read", 
                   nodemodule="scanalea.codecs",
                   nodeclass="read",
-                  inputs = (dict(name="filename", interface='IFileStr'), ),
+                  inputs = (dict(name="filename", interface='IFileStr'), 
+                            dict(name="split", interface='IBool', value=True),),
                   outputs = ( dict(name="scene", interface=None), ),
 
                   )

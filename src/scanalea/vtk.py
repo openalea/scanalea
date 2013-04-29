@@ -35,7 +35,7 @@ import openalea.plantgl.algo as alg
 #from openalea.plantgl.ext import color
 import numpy as np
 
-def generic_vtk_read(reader, fname):
+def generic_vtk_read(reader, fname, split=True):
 
     r = reader
     r.initialize(fname)
@@ -53,7 +53,7 @@ def generic_vtk_read(reader, fname):
     scene = sg.Scene()
 
     scalars = mesh.point_data.scalars
-    if scalars:
+    if scalars and split:
         scalars = scalars.to_array()
         dim = 1 if len(scalars.shape)==1 else scalars.shape[-1]
         set_scalars = []
@@ -114,12 +114,12 @@ class VtkCodec (sg.SceneCodec):
         return [ sg.SceneFormat("VTK Codec",["vtk"],"The vtk file format") ]
 
 
-    def read(self,fname):
+    def read(self,fname, split=True, *args):
         """ read a vtk file """
         from mayavi.sources.vtk_file_reader import VTKFileReader
         my_reader = VTKFileReader()
 
-        return generic_vtk_read(my_reader,fname)
+        return generic_vtk_read(my_reader,fname, split=split)
 
 
 
