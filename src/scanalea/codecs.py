@@ -24,6 +24,14 @@ def register(ext, klass):
     codec_registery[ext] = klass
 
 def read(fname):
+    """ Read 3D meshes based on the file extension.
+
+    :Parameters:
+        - fname : 3D mesh file (ply or vtk)
+
+    :Returns:
+        - PlantGL Scene
+    """
     fn = path(fname).abspath()
     if not fn.isfile():
         raise FileNameError(fname)

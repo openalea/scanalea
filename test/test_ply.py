@@ -10,12 +10,8 @@ fn = '/media/pradal/DONNEES/pradal/data/plantscan/segmented/segmentedMesh_manual
 scene = read(fn)
 Viewer.display(scene)
 
-stems, leaves, groups, coords = seg.organs(scene)
+scene1, stems, leaves, coords = seg.organs(scene)
 
-shapes = leaves.values()
-shapes.extend(stems.values())
-scene1 = Scene(shapes)
-Viewer.display(scene1)
 
 """
 from scanalea.light import caribu, display, turtle
