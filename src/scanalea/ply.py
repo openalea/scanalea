@@ -80,7 +80,7 @@ class PlyCodec (sg.SceneCodec):
         return [ sg.SceneFormat("PLY Codec",["ply"],"The ply file format") ]
 
 
-    def read(self,fname):
+    def read(self,fname, split=True, *args):
         """ read a ply file """
 
         tag = 'header' # element
