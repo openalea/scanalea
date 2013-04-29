@@ -23,7 +23,7 @@ def register(ext, klass):
     global codec_registery
     codec_registery[ext] = klass
 
-def read(fname):
+def read(fname, split=True):
     """ Read 3D meshes based on the file extension.
 
     :Parameters:
@@ -40,7 +40,7 @@ def read(fname):
     if file_ext not in codec_registery:
         raise UnknownCodecError(file_ext)
 
-    return codec_registery[file_ext]().read(fn)
+    return codec_registery[file_ext]().read(fn,split=split)
 
 from scanalea import ply, vtk
 register('vtk', vtk.VtkCodec)
