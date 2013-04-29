@@ -1,4 +1,5 @@
-from openalea.plantgl.scenegraph import Material, Shape, FaceSet, Tapered, Cylinder, Translated
+from openalea.plantgl.scenegraph import (Material, Shape, FaceSet, 
+Tapered, Cylinder, Translated, Scene)
 import numpy as np
 from math import sqrt
 
@@ -90,7 +91,12 @@ def organs(scene, first_leaf_index = 99, split_stem=False):
     if not split_stem:
         k0 = min(list(stems))
         group_stems = {k0: bigstem}
-        return group_stems, group_leaves, connected_components, sorted_coords
+        
+        shapes = group_leaves.values()
+        shapes.extend(group_stems.values())
+        scene1 = Scene(shapes)
+
+        return scene1, group_stems, group_leaves, sorted_coords
 
     # Group Stems
     # compute the z_min of each stem
@@ -133,7 +139,6 @@ def organs(scene, first_leaf_index = 99, split_stem=False):
         sh = group_shapes(last_stems,new_leaf_id)
         sh.id = new_leaf_id
         group_leaves[new_leaf_id] = sh
-        print last_stems
         
     print _stems
 
@@ -144,7 +149,11 @@ def organs(scene, first_leaf_index = 99, split_stem=False):
         group_stems[lid].id = lid
 
 
-    return group_stems, group_leaves, connected_components, sorted_coords
+    shapes = group_leaves.values()
+    shapes.extend(group_stems.values())
+    scene1 = Scene(shapes)
+
+    return scene1, group_stems, group_leaves, sorted_coords
 
 
 def intersect(shape1, shape2):
@@ -204,7 +213,15 @@ def bbox(shape):
 
 
     
-def create_mtg(stems, leaves, ordered_leaves):
+def create_mtg(stems, leaves, ordered_leaves, leaves_data=None, *args):
+    """ Create an MTG from the segmentation.
+
+    :Parameters:
+        - stems : dict of stem mesh
+        - leaves : dict of leaf mesh
+        - ordered_leaves : ordered list of leaf id and min, mean, max 
+        - leaves_data : csv file containing leaves information
+    """
     from openalea.mtg import mtg
     mesh = None
     if len(stems) > 1:
@@ -278,7 +295,10 @@ def create_mtg(stems, leaves, ordered_leaves):
         previous_metamer+=1
         
 
-    return mtg.fat_mtg(g)
+    g = mtg.fat_mtg(g)
+    if leaves_data:
+        g = add_leaves_data(g, leaves_data)
+    return g
         
     
 def add_leaves_data(g, fn):

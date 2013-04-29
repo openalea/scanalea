@@ -5,8 +5,8 @@ from openalea.core import *
 __name__ = 'ScanAlea'
 __version__ = '1.0.0'
 __license__ = 'CeCILL-C'
-__author__ = None
-__institutes__ = None
+__author__ = 'Tom Guo, Christophe Pradal, Christian Fournier'
+__institutes__ = 'CSIRO, INRIA, CIRAD, INRA'
 __description__ = ''
 __url__ = 'http://openalea.gforge.inria.fr'
 
@@ -16,6 +16,56 @@ __alias__ = []
 
 __all__ = []
 
+_read = Factory(name="scanalea read", 
+                  nodemodule="scanalea.codecs",
+                  nodeclass="read",
+                  inputs = (dict(name="filename", interface='IFileStr'), ),
+                  outputs = ( dict(name="scene", interface=None), ),
 
-    
+                  )
+__all__.append('_read')
+
+_segrec= Factory(name="seg recognition", 
+                  nodemodule="scanalea.segmentation",
+                  nodeclass="organs",
+                  outputs = ( dict(name="scene"), 
+                              dict(name="stems", interface='IDict'), 
+                              dict(name="leaves", interface='IDict'), 
+                              dict(name="leaf coordinates", interface='ISequence'), ),
+
+                  )
+__all__.append('_segrec')
+
+
+_mtg = Factory(name="seg 2 mtg ", 
+                  nodemodule="scanalea.segmentation",
+                  nodeclass="create_mtg",
+                  inputs = ( dict(name="stems", interface='IDict'), 
+                              dict(name="leaves", interface='IDict'), 
+                              dict(name="leaf coordinates", interface='ISequence'),
+                              dict(name="csv data", interface='IFileStr') ),
+                  outputs = (dict(name="mtg"),),
+                  )
+
+__all__.append('_mtg')
+
+_mtg_display = Factory(name="MTG : display ", 
+                  nodemodule="scanalea.util",
+                  nodeclass="display",
+                  inputs = ( dict(name="g"),  ),
+                  outputs = (dict(name="string", interface="IStr"),),
+                  )
+
+__all__.append('_mtg_display')
+
+_mtg_plot = Factory(name="MTG : plot ", 
+                  nodemodule="scanalea.util",
+                  nodeclass="plot",
+                  inputs = ( dict(name="g"),  ),
+                  outputs = (dict(name="scene"),),
+                  )
+
+__all__.append('_mtg_plot')
+
+
 
