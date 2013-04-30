@@ -1,5 +1,7 @@
 """
-Infer a plausible plant from scanalea measurments
+Inference functions for maize from plantscan measurements
+
+These functions allows to make an automatic assesment of a measured plant by using biological knowledge 
 """
 import scanalea
 from alinea.adel.AdelR import csvAsDict, dataframe, RdflistAsdicts
@@ -32,6 +34,12 @@ r(rcode)
 RinferMaize = robj.globalEnv['infer_maize']
 
 def inferMaize(csvfile, nff =16):
+"""
+Infer a plausible maize plant from scanalea measurments at one time
+
+    Parameters : should be a mtg pre-processed by scanalea
+    Returns : should be a "corrected" mtg
+"""
     data = csvAsDict(csvfile)
     df=dataframe(data)
     res=RinferMaize(df,nff)
