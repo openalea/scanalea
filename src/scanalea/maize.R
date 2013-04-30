@@ -37,22 +37,29 @@ infer_stage <- function(data,fitS,coef=1.8,conv=0.01) {
   phyl <- 1
   pvis <- data$Area*conv / predS(fitS,data$rank)
   ncol <- max(data$rank[pvis > 0.9])
+  # update pvis for visible leaves by including 'stem leength"
+  #stem <- c(0,diff(data$height[order(data$pos)]))
+  #data$Area[data$rank > ncol] <-  data$Area[data$rank > ncol] * (1 +  stem[data$rank > ncol] / data$Width[data$rank > ncol])
+  #pvis <- data$Area*conv / predS(fitS,data$rank)
   tip <- phyl*(ncol+1)
   ttcol <- coef*phyl*(ncol+1)
   tt <- ttcol-(1-pvis[which(data$rank==ncol+1)])*(ttcol-tip)
-  tt / phyl
+  data.frame(tip = tt / phyl, col = tt / phyl / coef)
 }
 #
 #macro to be used in scanalea
 #
-infer_Plant <- function(data, nff = 16, conv = 0.01) {
+infer_maize <- function(data, nff = 16, conv = 0.01) {
 #
 #reference curve : B73 MA11 WW
   fitref <- data.frame(nff=17.5, nmax=12.08, Smax = 975.77, A1 = -4.79, A2=0.18)
+  #order along height
+  data <- data[order(data$height),]
+  data$pos <- seq(nrow(data))
   data$rank <- infer_rank(data,fitref)
   fitS <- infer_fitS(data, fitref, nff = nff)
   stage <- infer_stage(data,fitS)
-  list(fitS=fitS,stage = data.frame(stage=stage),ranks = data.frame(pos=data$pos,rank=data$rank))
+  list(fitS=fitS,stage = stage,ranks = data.frame(Leaf_Number=data$Leaf_Number, pos=data$pos,rank=data$rank))
 }
 #
 #
@@ -60,9 +67,6 @@ infer_Plant <- function(data, nff = 16, conv = 0.01) {
 # to be developd later
 if (0 > 1) {
   data <- read.csv("leaves_data.csv")
-#order along height
-data <- data[order(data$height),]
-data$pos <- seq(nrow(data))
 res <- infer_Plant(data)
 
     lws <- getLWS(fitS)
