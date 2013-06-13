@@ -19,7 +19,7 @@ Usage:
 ~~~~~~~~~~
 
     - `Segmentation to MTG <http://nbviewer.ipython.org/urls/raw.github.com/pradal/scanalea/master/example/ScanAlea.ipynb>`_
-    - `Light interception <http://nbviewer.ipython.org/urls/raw.github.com/pradal/scanalea/master/example/ScanAlea-Dataflow.ipynb`_
+    - `Light interception <http://nbviewer.ipython.org/urls/raw.github.com/pradal/scanalea/master/example/ScanAlea-Dataflow.ipynb>`_
 
 Reference:
 ~~~~~~~~~~
