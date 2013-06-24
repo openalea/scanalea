@@ -30,18 +30,15 @@ Hacker guide
 
 For young git user, here is a list of usefull commands:
 
-Commit your modifications on YOUR local branch:
-.. code:: bash
+Commit your modifications on YOUR local branch::
     
     git commit -am 'FIX - my message'
 
-To publish your modifications on your github (like svn commit):
-.. code:: bash
+To publish your modifications on your github (like svn commit)::
     
     git push
 
-To retrieve the modifications from others (svn update):
-.. code:: bash
+To retrieve the modifications from others (svn update)::
     
     git pull
 
